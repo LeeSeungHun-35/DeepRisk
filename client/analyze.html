@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>딥페이크 취약성 분석 - 분석</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="nav-wrapper">
+        <nav class="navbar">
+            <a href="index.html" class="nav-brand">DeepFake Shield</a>
+            <div class="nav-links">
+                <a href="index.html">홈</a>
+                <a href="analyze.html" class="active">분석</a>
+            </div>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <div class="container">
+            <h1 class="title">이미지 분석</h1>
+            <p class="description">
+                업로드한 이미지의 딥페이크 취약성을 AI가 분석합니다.<br>
+                드래그 앤 드롭으로 이미지를 업로드하거나 아래 영역을 클릭하세요.
+            </p>
+            
+            <div class="upload-area" id="dropZone">
+                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#e94560" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p>이미지를 여기에 드래그하거나 클릭하여 업로드</p>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+            
+            <img id="previewImage" class="preview-image" style="display: none;">
+            <button id="analyzeBtn" style="display: none;">분석 시작</button>
+            
+            <div id="loadingSpinner" class="loading" style="display: none;"></div>
+            <div id="resultContainer" class="result-container" style="display: none;"></div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

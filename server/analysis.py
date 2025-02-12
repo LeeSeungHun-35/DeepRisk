@@ -5,9 +5,9 @@ import json
 from PIL import Image, ExifTags
 import dlib
 
-#얼굴 정면도 계산을 위한 모델 로드
+    #얼굴 정면도 계산을 위한 모델 로드
 detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")  # 얼굴 랜드마크 예측기 로드
+predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")  #얼굴 랜드마크 예측기 로드
 
 def calculate_face_score(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -33,7 +33,7 @@ def calculate_face_score(img):
         nose_magnitude = np.linalg.norm(nose_vector)
         cosine_similarity = dot_product / (eye_magnitude * nose_magnitude)
         
-        #코사인 유사도 값에서 각도 계산 (0 ~ 180도 범위)
+                 #코사인 유사도 값에서 각도 계산 (0 ~ 180도 범위)
         angle = np.arccos(cosine_similarity) * 180 / np.pi
 
         #각도에 따른 점수 부여 (정면일수록 100, 옆을 향할수록 낮은 점수)
