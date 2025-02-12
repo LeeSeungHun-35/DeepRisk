@@ -19,7 +19,7 @@ app.post('/analyze', upload.single('image'), (req, res) => {
     const imagePath = path.join(__dirname, req.file.path);
     const pythonProcess = spawn('python', ['analysis.py', imagePath]);
 
-//파이썬 스크립트 출력 처리하는 부분ㄴㄴ
+//파이썬 스크립트 출력 처리하는 부분ㄴ
     let dataBuffer = "";
 
     pythonProcess.stdout.on('data', (data) => {
