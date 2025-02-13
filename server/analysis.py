@@ -36,7 +36,7 @@ def calculate_face_score(img):
                  #코사인 유사도 값에서 각도 계산 (0 ~ 180도 범위)
         angle = np.arccos(cosine_similarity) * 180 / np.pi
 
-        #각도에 따른 점수 부여 (정면일수록 100, 옆을 향할수록 낮은 점수)
+         #각도에 따라서 점수 부여 (정면일수록 100, 옆을 향할수록 낮은 점수)
         if angle < 10:   #거의 정면
             face_score = 100
         elif angle < 30:

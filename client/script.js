@@ -1,25 +1,62 @@
-document.getElementById('uploadBtn').addEventListener('click', async () => { // '업로드' 버튼 클릭 시 이벤트 리스너 추가
-    const fileInput = document.getElementById('imageInput'); // 이미지 입력 요소 가져오기
-    const file = fileInput.files[0]; // 선택한 첫 번째 파일 가져오기
+document.addEventListener("DOMContentLoaded", () => {
+    const fileInput = document.getElementById("fileInput");
+    const dropZone = document.getElementById("dropZone");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const previewImage = document.getElementById("previewImage");
+    const resultContainer = document.getElementById("resultContainer");
+    const loadingSpinner = document.getElementById("loadingSpinner");
 
-    if (!file) { // 파일이 선택되지 않은 경우
-        alert('이미지를 선택하세요.'); // 이미지 선택 요청 알림
-        return; // 함수 종료
-    }
+    // 드래그 박스 클릭 시 파일 선택창 열기
+    dropZone.addEventListener("click", () => {
+        fileInput.click();
+    });
 
-    const formData = new FormData(); // 폼 데이터 객체 생성
-    formData.append('image', file); // 'image' 키에 파일 추가
+    fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewImage.style.display = "block";
+                analyzeBtn.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
-    try {
-        const response = await fetch('/analyze', { // '/analyze' 엔드포인트로 POST 요청
-            method: 'POST', // HTTP 메소드: POST
-            body: formData // 폼 데이터 본문으로 전송
-        });
+    analyzeBtn.addEventListener("click", async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+            alert("이미지를 선택하세요.");
+            return;
+        }
 
-        const data = await response.json(); // 서버 응답을 JSON 형식으로 변환
-        document.getElementById('result').innerHTML = `<p>분석 결과: ${data.vulnerability_score}% 취약</p>`; // 분석 결과를 HTML에 출력
-    } catch (error) { // 에러 발생 시
-        console.error('분석 중 오류 발생:', error); // 콘솔에 오류 출력
-        document.getElementById('result').innerHTML = `<p>오류 발생! 다시 시도하세요.</p>`; // 오류 메시지 출력
-    }
+        const formData = new FormData();
+        formData.append("image", file);
+
+        loadingSpinner.style.display = "block";
+        analyzeBtn.style.display = "none";
+        resultContainer.innerHTML = "";
+
+        try {
+            const response = await fetch("http://localhost:3000/analyze", {
+                method: "POST",
+                body: formData,
+            });
+
+            const data = await response.json();
+            loadingSpinner.style.display = "none"; 
+
+            if (data.error) {
+                resultContainer.innerHTML = `<p class="error">${data.error}</p>`;
+            } else {
+                resultContainer.innerHTML = `<p class="success"> 분석 결과: ${data.vulnerability_score}% 취약</p>`;
+            }
+        } catch (error) {
+            console.error("분석 중 오류 발생했습니다:", error);
+            resultContainer.innerHTML = `<p class="error">서버 오류 발생! 다시 시도하세요.</p>`;
+            loadingSpinner.style.display = "none";
+            analyzeBtn.style.display = "block";
+        }
+    });
 });
