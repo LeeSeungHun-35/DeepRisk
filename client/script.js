@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const resultContainer = document.getElementById("resultContainer");
     const loadingSpinner = document.getElementById("loadingSpinner");
 
-    // 드래그 박스 클릭 시 파일 선택창 열기
     dropZone.addEventListener("click", () => {
         fileInput.click();
     });
@@ -36,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         loadingSpinner.style.display = "block";
         analyzeBtn.style.display = "none";
+        resultContainer.style.display = "none";  // 결과 컨테이너 초기화
         resultContainer.innerHTML = "";
 
         try {
@@ -45,15 +45,21 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await response.json();
-            loadingSpinner.style.display = "none"; 
+            loadingSpinner.style.display = "none";
+            resultContainer.style.display = "block";  // 결과 컨테이너 표시
 
             if (data.error) {
                 resultContainer.innerHTML = `<p class="error">${data.error}</p>`;
             } else {
-                resultContainer.innerHTML = `<p class="success"> 분석 결과: ${data.vulnerability_score}% 취약</p>`;
+                resultContainer.innerHTML = `
+                    <p class="success">분석 결과: ${data.vulnerability_score}% 취약</p>
+                    <p class="description">점수가 높을수록 딥페이크 변조에 취약합니다.</p>
+                `;
             }
+            analyzeBtn.style.display = "block";  // 분석 버튼 다시 표시
         } catch (error) {
             console.error("분석 중 오류 발생했습니다:", error);
+            resultContainer.style.display = "block";
             resultContainer.innerHTML = `<p class="error">서버 오류 발생! 다시 시도하세요.</p>`;
             loadingSpinner.style.display = "none";
             analyzeBtn.style.display = "block";
