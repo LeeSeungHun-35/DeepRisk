@@ -14,9 +14,9 @@ def detect_face_landmarks(image):
         if results.multi_face_landmarks:
             return results.multi_face_landmarks[0].landmark
         else:
-            raise ValueError("얼굴 랜드마크를 찾을 수 없습니다.")
+            raise ValueError("얼굴을 찾을 수 없습니다.")
     except Exception as e:
-        return {"error": f"얼굴 랜드마크 추출 중 오류 발생: {str(e)}"}
+        return {"error": f"얼굴 랜드마크 추출 중 오류 발생 : {str(e)}"}
 
 def detect_blur(image):
     try:

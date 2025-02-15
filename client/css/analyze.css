@@ -40,11 +40,14 @@
 .preview-image {
     max-width: 100%;
     max-height: 400px;
-    margin: 20px 0;
+    margin: 20px auto;  /* 상하 여백 20px, 좌우 auto로 설정하여 가운데 정렬 */
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s ease;
+    display: block;  /* block 요소로 변경하여 margin auto가 적용되도록 함 */
+    object-fit: contain;  /* 이미지 비율 유지 */
 }
+
 
 .preview-image:hover {
     transform: scale(1.05);
