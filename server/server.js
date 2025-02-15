@@ -9,20 +9,28 @@ const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname, '../client')));
 
+// 📌 uploads 폴더 자동 생성
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+// 📌 Multer 설정
 const storage = multer.diskStorage({
-    destination: 'uploads/',
+    destination: uploadDir,
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 const upload = multer({ storage });
 
+// 📌 이미지 분석 API
 app.post('/analyze', upload.single('image'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: '파일이 없습니다.' });
     }
 
-    const imagePath = path.join(__dirname, req.file.path);
+    const imagePath = path.join(uploadDir, req.file.filename);
     const pythonProcess = spawn('python', ['analysis.py', imagePath]);
 
     let dataBuffer = "";
@@ -40,6 +48,9 @@ app.post('/analyze', upload.single('image'), (req, res) => {
             return res.status(500).json({ error: 'Python 실행 실패' });
         }
         try {
+            if (!dataBuffer.trim()) {
+                return res.status(500).json({ error: '얼굴을 찾을 수 없습니다.' });
+            }
             const result = JSON.parse(dataBuffer);
             res.json(result);
         } catch (err) {
