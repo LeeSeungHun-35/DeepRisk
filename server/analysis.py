@@ -12,20 +12,16 @@ from facenet_pytorch import InceptionResnetV1
 from torchvision import transforms
 from PIL import Image
 
-# 모든 경고 메시지 무시
 warnings.filterwarnings('ignore')
 
-# TensorFlow 로그 레벨 설정
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # 모든 로그 숨기기
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  #모든 로그 숨기기
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
-# MediaPipe 로그 숨기기
 import absl.logging
 absl.logging.set_verbosity(absl.logging.ERROR)
 logging.root.removeHandler(absl.logging._absl_handler)
 absl.logging._warn_preinit_stderr = False
 
-# 표준 에러 출력 무시
 class DummyFile:
     def write(self, x): pass
     def flush(self): pass
@@ -33,7 +29,6 @@ sys.stderr = DummyFile()
 
 class DeepFakeVulnerabilityAnalyzer:
     def __init__(self):
-        # MediaPipe FaceMesh 초기화
         self.mp_face_mesh = mp.solutions.face_mesh
         self.face_mesh = self.mp_face_mesh.FaceMesh(
             static_image_mode=True,
@@ -42,10 +37,8 @@ class DeepFakeVulnerabilityAnalyzer:
             min_detection_confidence=0.5
         )
 
-        # FaceNet 모델 로드
         self.facenet = InceptionResnetV1(pretrained='vggface2').eval()
         
-        # 이미지 전처리 Transform
         self.transform = transforms.Compose([
             transforms.Resize((160, 160)),
             transforms.ToTensor(),
@@ -72,7 +65,6 @@ class DeepFakeVulnerabilityAnalyzer:
         return features, None
 
     def _calculate_face_alignment(self, landmarks):
-        """얼굴의 정면 정렬 상태 분석"""
         left_eye = np.mean([[landmarks[33].x, landmarks[33].y]], axis=0)
         right_eye = np.mean([[landmarks[263].x, landmarks[263].y]], axis=0)
         nose = np.array([landmarks[4].x, landmarks[4].y])
@@ -84,7 +76,6 @@ class DeepFakeVulnerabilityAnalyzer:
         return alignment_score
 
     def _analyze_skin_texture(self, image, landmarks):
-        """피부 텍스처의 품질 분석"""
         face_region = self._get_face_region(image, landmarks)
         if face_region is None:
             return 0.5
@@ -95,7 +86,6 @@ class DeepFakeVulnerabilityAnalyzer:
         return min(texture_score / 1000, 1)
 
     def _calculate_facial_symmetry(self, landmarks, width, height):
-        """얼굴의 좌우 대칭성 계산"""
         center_x = width / 2
         symmetry_points = [
             (33, 263),
@@ -114,7 +104,6 @@ class DeepFakeVulnerabilityAnalyzer:
         return np.mean(symmetry_scores)
 
     def _calculate_feature_distinctiveness(self, landmarks):
-        """얼굴 특징의 뚜렷한 정도 계산"""
         feature_points = [
             (33, 133),
             (61, 291),
@@ -132,7 +121,7 @@ class DeepFakeVulnerabilityAnalyzer:
         return min(distinctiveness, 1)
 
     def _analyze_image_quality(self, image):
-        """이미지 품질 분석"""
+
         gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         sharpness = cv2.Laplacian(gray, cv2.CV_64F).var()
         
@@ -143,7 +132,7 @@ class DeepFakeVulnerabilityAnalyzer:
         return quality_score
 
     def _get_face_region(self, image, landmarks):
-        """얼굴 영역 추출"""
+
         h, w = image.shape[:2]
         points = np.array([[int(landmark.x * w), int(landmark.y * h)] 
                           for landmark in landmarks])
@@ -157,7 +146,7 @@ class DeepFakeVulnerabilityAnalyzer:
         return image[y:y+h, x:x+w]
 
     def predict_vulnerability(self, features):
-        """특징들을 기반으로 취약성 점수 예측"""
+
         weights = {
             'face_alignment': 0.25,
             'skin_texture': 0.2,
@@ -171,7 +160,7 @@ class DeepFakeVulnerabilityAnalyzer:
         return int(vulnerability_score * 100)
 
     def analyze_image(self, image_path):
-        """이미지 분석 및 취약성 평가"""
+
         try:
             image = cv2.imread(image_path)
             if image is None:
