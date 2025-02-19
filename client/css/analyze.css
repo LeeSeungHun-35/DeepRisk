@@ -142,3 +142,37 @@ button:hover {
     width: 100%;
     margin-top: 30px;
 }
+
+.result-title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.score-container {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.main-score {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    color: #e94560;
+    margin-bottom: 20px;
+}
+
+.details-scores {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.details-scores p {
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+    margin: 0;
+}

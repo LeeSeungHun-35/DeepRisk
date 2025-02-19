@@ -9,13 +9,13 @@ const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname, '../client')));
 
-// 📌 uploads 폴더 자동 생성
+//uploads 폴더 자동 생성
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-// 📌 Multer 설정
+//Multer 설정
 const storage = multer.diskStorage({
     destination: uploadDir,
     filename: (req, file, cb) => {
@@ -24,7 +24,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// 📌 이미지 분석 API
+//이미지 분석 API
 app.post('/analyze', upload.single('image'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: '파일이 없습니다.' });
