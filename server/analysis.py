@@ -160,21 +160,29 @@ class DeepFakeVulnerabilityAnalyzer:
         return int(vulnerability_score * 100)
 
     def analyze_image(self, image_path):
-
         try:
             image = cv2.imread(image_path)
             if image is None:
                 return {"error": "이미지를 불러올 수 없습니다."}
             
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            
+            # 이미지 크기 확인
+            if image.size == 0:
+                return {"error": "잘못된 이미지 형식입니다."}
+                
             features, error = self.extract_face_features(image)
             if error:
                 return {"error": error}
             
             vulnerability_score = self.predict_vulnerability(features)
             
+            # 결과에 상세 설명 추가
+            risk_level = "높음" if vulnerability_score > 70 else "중간" if vulnerability_score > 40 else "낮음"
+            
             return {
                 "vulnerability_score": vulnerability_score,
+                "risk_level": risk_level,
                 "details": features
             }
 
@@ -182,7 +190,16 @@ class DeepFakeVulnerabilityAnalyzer:
             return {"error": f"이미지 분석 중 오류 발생: {str(e)}"}
 
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print(json.dumps({"error": "이미지 경로가 제공되지 않았습니다."}, ensure_ascii=False))
+        sys.exit(1)
+        
     analyzer = DeepFakeVulnerabilityAnalyzer()
-    image_path = sys.argv[1] if len(sys.argv) > 1 else "face.jpg"
+    image_path = sys.argv[1]
+    
+    if not os.path.exists(image_path):
+        print(json.dumps({"error": "이미지 파일을 찾을 수 없습니다."}, ensure_ascii=False))
+        sys.exit(1)
+        
     result = analyzer.analyze_image(image_path)
     print(json.dumps(result, ensure_ascii=False))

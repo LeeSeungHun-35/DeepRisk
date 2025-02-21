@@ -83,9 +83,22 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.error) {
                 resultContainer.innerHTML = `<p class="error">${data.error}</p>`;
             } else {
+                const riskLevelClass = data.vulnerability_score > 70 ? 'high-risk' : 
+                                     data.vulnerability_score > 40 ? 'medium-risk' : 
+                                     'low-risk';
+                                     
                 resultContainer.innerHTML = `
-                    <p class="success">분석 결과: ${data.vulnerability_score}% 취약</p>
-                    <p class="description">점수가 높을수록 딥페이크 변조에 취약합니다.</p>
+                    <p class="success ${riskLevelClass}">
+                        취약성 점수: ${data.vulnerability_score}%
+                    </p>
+                    <p class="description">
+                        위 취약성 점수가 높을수록 딥페이크 변조되었을떄 자연스러워집니다.<br>
+                        - 얼굴 정면도: ${Math.round(data.details.face_alignment * 100)}%<br>
+                        - 피부 텍스처: ${Math.round(data.details.skin_texture * 100)}%<br>
+                        - 얼굴 대칭성: ${Math.round(data.details.facial_symmetry * 100)}%<br>
+                        - 특징 명확도: ${Math.round(data.details.feature_distinctiveness * 100)}%<br>
+                        - 이미지 품질: ${Math.round(data.details.image_quality * 100)}%
+                    </p>
                 `;
             }
             

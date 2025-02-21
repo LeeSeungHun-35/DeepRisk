@@ -31,32 +31,50 @@ app.post('/analyze', upload.single('image'), (req, res) => {
     }
 
     const imagePath = path.join(uploadDir, req.file.filename);
-    const pythonProcess = spawn('python', ['analysis.py', imagePath]);
+    // Python 스크립트의 절대 경로 사용
+    const pythonScriptPath = path.join(__dirname, 'analysis.py');
+    const pythonProcess = spawn('python', [pythonScriptPath, imagePath]);
 
     let dataBuffer = "";
+    let errorBuffer = "";
 
     pythonProcess.stdout.on('data', (data) => {
         dataBuffer += data.toString();
     });
 
     pythonProcess.stderr.on('data', (data) => {
+        errorBuffer += data.toString();
         console.error('Python 오류:', data.toString());
     });
 
     pythonProcess.on('close', (code) => {
+        // 항상 업로드된 이미지 삭제
+        fs.unlink(imagePath, (err) => {
+            if (err) console.error('파일 삭제 실패:', err);
+        });
+
         if (code !== 0) {
-            return res.status(500).json({ error: 'Python 실행 실패' });
+            return res.status(500).json({ 
+                error: '분석 실패', 
+                details: errorBuffer 
+            });
         }
+
         try {
-            if (!dataBuffer.trim()) {
+            const trimmedData = dataBuffer.trim();
+            if (!trimmedData) {
                 return res.status(500).json({ error: '얼굴을 찾을 수 없습니다.' });
             }
-            const result = JSON.parse(dataBuffer);
+            const result = JSON.parse(trimmedData);
+            if (result.error) {
+                return res.status(500).json(result);
+            }
             res.json(result);
         } catch (err) {
-            res.status(500).json({ error: '결과 처리 실패' });
-        } finally {
-            fs.unlink(imagePath, () => {});
+            res.status(500).json({ 
+                error: '결과 처리 실패',
+                details: err.message 
+            });
         }
     });
 });
