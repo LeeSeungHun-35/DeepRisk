@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const resultContainer = document.getElementById("resultContainer");
     const loadingSpinner = document.getElementById("loadingSpinner");
 
-      //드래그 앤 드롭 처리
+    // 드래그 앤 드롭 처리
     dropZone.addEventListener("dragover", (e) => {
         e.preventDefault();
         dropZone.classList.add("dragover");
@@ -28,12 +28,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    //파일 선택 클릭 
+    // 파일 선택 클릭 
     dropZone.addEventListener("click", () => {
         fileInput.click();
     });
 
-//파일 입력 변경 
+    // 파일 입력 변경 
     fileInput.addEventListener("change", () => {
         const file = fileInput.files[0];
         if (file) {
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-     //파일 미리보기 처리 
+    // 파일 미리보기 처리 
     function handleFilePreview(file) {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsDataURL(file);
     }
 
-    //분석 버튼 클릭
+    // 분석 버튼 클릭
     analyzeBtn.addEventListener("click", async () => {
         const file = fileInput.files[0];
         if (!file) {
@@ -75,37 +75,35 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await response.json();
-            console.log("Received data from server:", data);  //데이터 로깅
-
+            
             loadingSpinner.style.display = "none";
             resultContainer.style.display = "block";
 
             if (data.error) {
                 resultContainer.innerHTML = `<p class="error">${data.error}</p>`;
             } else {
-                const riskLevelClass = data.vulnerability_score > 70 ? 'high-risk' : 
-                                     data.vulnerability_score > 40 ? 'medium-risk' : 
-                                     'low-risk';
-                                     
+                const riskLevel = data.vulnerability_score > 70 ? '매우 취약' :
+                                data.vulnerability_score > 40 ? '취약' : '안전';
+                const riskLevelClass = data.vulnerability_score > 70 ? 'high-risk' :
+                                     data.vulnerability_score > 40 ? 'medium-risk' : 'low-risk';
+
                 resultContainer.innerHTML = `
                     <p class="success ${riskLevelClass}">
-                        취약성 점수: ${data.vulnerability_score}%
+                        취약성 점수: ${data.vulnerability_score}% (${riskLevel})
                     </p>
                     <p class="description">
-                        위 취약성 점수가 높을수록 딥페이크 변조되었을떄 자연스러워집니다.<br>
-                        - 얼굴 정면도: ${Math.round(data.details.face_alignment * 100)}%<br>
-                        - 피부 텍스처: ${Math.round(data.details.skin_texture * 100)}%<br>
-                        - 얼굴 대칭성: ${Math.round(data.details.facial_symmetry * 100)}%<br>
-                        - 특징 명확도: ${Math.round(data.details.feature_distinctiveness * 100)}%<br>
-                        - 이미지 품질: ${Math.round(data.details.image_quality * 100)}%
+                        정면도: ${data.details.orientation_score}%<br>
+                        가시성: ${data.details.visibility_score}%<br>
+                        크기 적절성: ${data.details.size_score}%<br>
+                        감지된 눈 개수: ${data.details.eyes_detected}개<br>
+                        - 얼굴이 정면을 향하고 잘 보일수록 딥페이크 변조에 취약합니다.
                     </p>
                 `;
             }
-            
         } catch (error) {
-            console.error("Error during analysis:", error);  //에러 로깅
+            console.error("분석 중 오류:", error);
             resultContainer.style.display = "block";
-            resultContainer.innerHTML = `<p class="error">서버 오류 발생! 다시 시도하세요.</p>`;
+            resultContainer.innerHTML = `<p class="error">서버 오류가 발생했습니다.</p>`;
             loadingSpinner.style.display = "none";
             analyzeBtn.style.display = "block";
         }
