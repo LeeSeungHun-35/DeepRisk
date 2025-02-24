@@ -19,10 +19,28 @@ if (!fs.existsSync(uploadDir)) {
 const storage = multer.diskStorage({
     destination: uploadDir,
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+        const ext = path.extname(file.originalname);
+        const timestamp = Date.now();
+        cb(null, `image_${timestamp}${ext}`);
     }
 });
-const upload = multer({ storage });
+
+const fileFilter = (req, file, cb) => {
+    //이미지 형식 검사
+    if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+    } else {
+        cb(new Error('이미지 파일만 업로드 가능합니다.'), false);
+    }
+};
+
+const upload = multer({ 
+    storage,
+    fileFilter,
+    limits: {
+        fileSize: 10 * 1024 * 1024 
+    }
+});
 
 //이미지 분석 API
 app.post('/analyze', upload.single('image'), (req, res) => {
@@ -31,9 +49,12 @@ app.post('/analyze', upload.single('image'), (req, res) => {
     }
 
     const imagePath = path.join(uploadDir, req.file.filename);
-    // Python 스크립트의 절대 경로 사용
     const pythonScriptPath = path.join(__dirname, 'analysis.py');
-    const pythonProcess = spawn('python', [pythonScriptPath, imagePath]);
+    
+ //Python 실행 환경
+    const pythonProcess = spawn('python', [pythonScriptPath, imagePath], {
+        env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
+    });
 
     let dataBuffer = "";
     let errorBuffer = "";
@@ -47,38 +68,77 @@ app.post('/analyze', upload.single('image'), (req, res) => {
         console.error('Python 오류:', data.toString());
     });
 
+   //타임아웃 설정
+    const timeout = setTimeout(() => {
+        pythonProcess.kill();
+        cleanupAndRespond('분석 시간이 초과되었습니다.');
+    }, 30000); //30초 타임아웃
+
+    function cleanupAndRespond(error) {
+        clearTimeout(timeout);
+        fs.unlink(imagePath, (err) => {
+            if (err) console.error('파일 삭제 실패:', err);
+        });
+
+        if (error) {
+            return res.status(500).json({ 
+                error: error,
+                details: errorBuffer || '자세한 오류 정보가 없습니다.'
+            });
+        }
+    }
+
     pythonProcess.on('close', (code) => {
-        // 항상 업로드된 이미지 삭제
+        clearTimeout(timeout);
+        
         fs.unlink(imagePath, (err) => {
             if (err) console.error('파일 삭제 실패:', err);
         });
 
         if (code !== 0) {
             return res.status(500).json({ 
-                error: '분석 실패', 
-                details: errorBuffer 
+                error: '이미지 분석에 실패했습니다.', 
+                details: errorBuffer || '알 수 없는 오류가 발생했습니다.'
             });
         }
 
         try {
             const trimmedData = dataBuffer.trim();
             if (!trimmedData) {
-                return res.status(500).json({ error: '얼굴을 찾을 수 없습니다.' });
+                return res.status(500).json({ 
+                    error: '분석 결과가 없습니다.',
+                    details: '이미지에서 얼굴을 찾을 수 없습니다.'
+                });
             }
             const result = JSON.parse(trimmedData);
             if (result.error) {
-                return res.status(500).json(result);
+                return res.status(500).json({
+                    error: result.error,
+                    details: result.details || '자세한 오류 정보가 없습니다.'
+                });
             }
             res.json(result);
         } catch (err) {
             res.status(500).json({ 
-                error: '결과 처리 실패',
+                error: '결과 처리에 실패했습니다.',
                 details: err.message 
             });
         }
     });
 });
 
-app.listen(3000, () => {
-    console.log('✅ 서버 실행 중: http://localhost:3000');
+app.use((err, req, res, next) => {
+    console.error('서버 에러:', err);
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: '파일 크기는 10MB 이하여야 합니다.' });
+        }
+        return res.status(400).json({ error: '파일 업로드 중 오류가 발생했습니다.' });
+    }
+    res.status(500).json({ error: err.message });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`✅ 서버 실행 중: http://localhost:${PORT}`);
 });
