@@ -110,11 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <p class="details">
                         <strong>분석 결과:</strong><br>
                         - 감지된 특징점: ${data.details.visible_landmarks_count}/${data.details.total_landmarks}<br>
-                        - 주요 특징 감지:<br>
-                        &nbsp;&nbsp;• 눈: ${data.details.key_features.eyes_detected ? '✓' : '✗'}<br>
-                        &nbsp;&nbsp;• 코: ${data.details.key_features.nose_detected ? '✓' : '✗'}<br>
-                        &nbsp;&nbsp;• 입: ${data.details.key_features.mouth_detected ? '✓' : '✗'}<br>
-                        &nbsp;&nbsp;• 얼굴윤곽: ${data.details.key_features.face_oval_detected ? '✓' : '✗'}<br>
+                       
                         <br>
                         <strong>해석:</strong><br>
                         - 특징점이 많이 감지될수록 딥페이크 변조가 용이할 수 있습니다.<br>
