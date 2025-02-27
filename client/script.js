@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const resultContainer = document.getElementById("resultContainer");
     const loadingSpinner = document.getElementById("loadingSpinner");
 
-//드래그 앤 드롭
     dropZone.addEventListener("dragover", (e) => {
         e.preventDefault();
         dropZone.classList.add("dragover");
@@ -39,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-//파일 미리보기 처리 
     function handleFilePreview(file) {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -50,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsDataURL(file);
     }
 
- //분석 버튼 클릭
     analyzeBtn.addEventListener("click", async () => {
         const file = fileInput.files[0];
         if (!file) {
@@ -58,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        //파일 크기 10MB 제한
         if (file.size > 10 * 1024 * 1024) {
             alert("파일 크기는 10MB 이하여야 합니다.");
             return;
@@ -79,56 +75,31 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await response.json();
-            console.log("Received data from server:", data);
 
             loadingSpinner.style.display = "none";
             resultContainer.style.display = "block";
 
             if (data.error) {
-                resultContainer.innerHTML = `
-                    <p class="error">
-                        <strong>분석 실패:</strong> ${data.error}
-                        ${data.details ? `<br><small>${data.details}</small>` : ''}
-                    </p>
-                `;
+                resultContainer.innerHTML = `<p class="error"><strong>분석 실패:</strong> ${data.error}</p>`;
                 analyzeBtn.style.display = "block";
             } else {
-                const riskLevelClass = data.vulnerability_score > 70 ? 'high-risk' :
-                                     data.vulnerability_score > 40 ? 'medium-risk' :
-                                     'low-risk';
-                
                 const riskLevel = data.vulnerability_score > 70 ? '높음' :
-                                data.vulnerability_score > 40 ? '중간' :
-                                '낮음';
-                                       
+                                  data.vulnerability_score > 40 ? '중간' : '낮음';
+
                 resultContainer.innerHTML = `
-                    <p class="success ${riskLevelClass}">
+                    <p class="success">
                         <strong>취약성 점수:</strong> ${data.vulnerability_score}%
                         <br>
                         <span class="risk-level">위험도: ${riskLevel}</span>
                     </p>
                     <p class="details">
-                        <strong>분석 결과:</strong><br>
-                        - 감지된 특징점: ${data.details.visible_landmarks_count}/${data.details.total_landmarks}<br>
-                       
-                        <br>
-                        <strong>해석:</strong><br>
-                        - 특징점이 많이 감지될수록 딥페이크 변조가 용이할 수 있습니다.<br>
-                        - 주요 특징(눈, 코, 입 등)이 잘 보일수록 위험도가 높아집니다.
-                        ${data.vulnerability_score > 70 ? 
-                          '<br><br><strong class="warning">주의: 이 이미지는 딥페이크 취약성이 높습니다.</strong>' : ''}
+                        - 감지된 피부 랜드마크: ${data.details.visible_landmarks_count}/${data.details.total_landmarks}<br>
+                        ${data.vulnerability_score > 70 ? '<strong class="warning">주의: 취약성이 높습니다.</strong>' : ''}
                     </p>
                 `;
             }
-
         } catch (error) {
-            console.error("Error during analysis:", error);
-            resultContainer.style.display = "block";
-            resultContainer.innerHTML = `
-                <p class="error">
-                    <strong>서버 오류:</strong> 서버와 통신 중 문제가 발생했습니다.<br>
-                    잠시 후 다시 시도해주세요.
-                </p>`;
+            resultContainer.innerHTML = `<p class="error"><strong>서버 오류:</strong> 다시 시도해주세요.</p>`;
             loadingSpinner.style.display = "none";
             analyzeBtn.style.display = "block";
         }

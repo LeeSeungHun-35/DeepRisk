@@ -9,13 +9,13 @@ const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname, '../client')));
 
-//uploads 폴더 자동 생성
+// uploads 폴더 자동 생성
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-//Multer 설정
+// Multer 설정
 const storage = multer.diskStorage({
     destination: uploadDir,
     filename: (req, file, cb) => {
@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    //이미지 형식 검사
+    // 이미지 형식 검사
     if (file.mimetype.startsWith('image/')) {
         cb(null, true);
     } else {
@@ -38,11 +38,11 @@ const upload = multer({
     storage,
     fileFilter,
     limits: {
-        fileSize: 10 * 1024 * 1024 
+        fileSize: 10 * 1024 * 1024 // 10MB 제한
     }
 });
 
-//이미지 분석 API
+// 이미지 분석 API
 app.post('/analyze', upload.single('image'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: '파일이 없습니다.' });
@@ -51,7 +51,7 @@ app.post('/analyze', upload.single('image'), (req, res) => {
     const imagePath = path.join(uploadDir, req.file.filename);
     const pythonScriptPath = path.join(__dirname, 'analysis.py');
     
- //Python 실행 환경
+    // Python 실행 환경
     const pythonProcess = spawn('python', [pythonScriptPath, imagePath], {
         env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
     });
@@ -68,11 +68,11 @@ app.post('/analyze', upload.single('image'), (req, res) => {
         console.error('Python 오류:', data.toString());
     });
 
-   //타임아웃 설정
+    // 타임아웃 설정
     const timeout = setTimeout(() => {
         pythonProcess.kill();
         cleanupAndRespond('분석 시간이 초과되었습니다.');
-    }, 30000); //30초 타임아웃
+    }, 30000); // 30초 타임아웃
 
     function cleanupAndRespond(error) {
         clearTimeout(timeout);
@@ -97,7 +97,7 @@ app.post('/analyze', upload.single('image'), (req, res) => {
 
         if (code !== 0) {
             return res.status(500).json({ 
-                error: '이미지 분석에 실패했습니다.', 
+                error: '이미지 분석에 실패했습니다', 
                 details: errorBuffer || '알 수 없는 오류가 발생했습니다.'
             });
         }
