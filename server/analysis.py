@@ -10,7 +10,6 @@ image_path = sys.argv[1]
 # MediaPipe Face Mesh 모델 초기화
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh(min_detection_confidence=0.5, min_tracking_confidence=0.5)
-mp_drawing = mp.solutions.drawing_utils
 
 # 이미지 로드
 image = cv2.imread(image_path)
@@ -20,16 +19,29 @@ height, width, _ = image.shape
 # 얼굴 랜드마크 탐지
 results = face_mesh.process(image_rgb)
 
-# 얼굴 랜드마크의 개수를 카운트
+# 마스크/손/가려진 부분 찾기 (Canny 엣지 검출 + 윤곽선 분석)
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+edges = cv2.Canny(gray, 50, 150)  # 엣지 검출
+contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+# 가려진 영역을 표시할 마스크 생성
+mask = np.ones((height, width), dtype=np.uint8) * 255  # 기본값: 흰색 (얼굴 보이는 부분)
+cv2.drawContours(mask, contours, -1, 0, thickness=cv2.FILLED)  # 검은색(0)으로 가려진 부분 표시
+
+# 얼굴 랜드마크 필터링
 if results.multi_face_landmarks:
     for face_landmarks in results.multi_face_landmarks:
-        landmarks = face_landmarks.landmark
-        skin_landmarks = [landmark for i, landmark in enumerate(landmarks) if i in range(0, 468)]  # 얼굴 전체 랜드마크
+        visible_landmarks_count = 0
+        total_landmarks = 468  # MediaPipe FaceMesh의 전체 랜드마크 수
 
-        # 랜드마크가 많을수록 딥페이크 취약성이 높다고 판단
-        visible_landmarks_count = len(skin_landmarks)
-        total_landmarks = 468  # MediaPipe FaceMesh는 최대 468개의 랜드마크를 제공합니다.
+        for landmark in face_landmarks.landmark:
+            x, y = round(landmark.x * width), round(landmark.y * height)  # 정수 변환 시 반올림
 
+            # 가려진 영역(검은색)인지 확인 → 0이면 가려진 부분이므로 제외
+            if 0 <= x < width and 0 <= y < height and mask[y, x] == 255:
+                visible_landmarks_count += 1  # 보이는 부분만 카운트
+
+        # 취약성 점수 계산 (가려지지 않은 랜드마크 기준)
         vulnerability_score = (visible_landmarks_count / total_landmarks) * 100
 
         result = {
@@ -40,7 +52,7 @@ if results.multi_face_landmarks:
             }
         }
 
-        # 결과를 JSON 형식으로 출력
+        # 결과 JSON 출력
         print(json.dumps(result))
 
 else:
