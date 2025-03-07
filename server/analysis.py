@@ -18,6 +18,7 @@ def check_image_quality(image):
     
     return True, "이미지 품질이 양호합니다"
 
+<<<<<<< HEAD
 def check_face_visibility(image):
     """얼굴 가시성 검사"""
     # 얼굴 검출기 로드
@@ -42,6 +43,11 @@ def check_face_visibility(image):
         return False, "얼굴이 너무 작게 보입니다"
     
     return True, "얼굴이 잘 보입니다"
+=======
+# MediaPipe Face Mesh 모델 초기화
+mp_face_mesh = mp.solutions.face_mesh
+face_mesh = mp_face_mesh.FaceMesh(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+>>>>>>> 5339547d05b52d5a6440b6d1240d506b931681f7
 
 def check_background(image):
     """배경 검사"""
@@ -65,6 +71,7 @@ def analyze_image_vulnerability(image_path):
         if image is None:
             return json.dumps({'error': '이미지를 불러올 수 없습니다.'})
 
+<<<<<<< HEAD
         # 각 항목별 검사
         quality_ok, quality_msg = check_image_quality(image)
         face_ok, face_msg = check_face_visibility(image)
@@ -81,6 +88,32 @@ def analyze_image_vulnerability(image_path):
 
         # 최종 점수는 0-100 사이로 조정
         score = max(0, min(100, score))
+=======
+# 마스크/손/가려진 부분 찾기 (Canny 엣지 검출 + 윤곽선 분석)
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+edges = cv2.Canny(gray, 50, 150)  # 엣지 검출
+contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+# 가려진 영역을 표시할 마스크 생성
+mask = np.ones((height, width), dtype=np.uint8) * 255  # 기본값: 흰색 (얼굴 보이는 부분)
+cv2.drawContours(mask, contours, -1, 0, thickness=cv2.FILLED)  # 검은색(0)으로 가려진 부분 표시
+
+# 얼굴 랜드마크 필터링
+if results.multi_face_landmarks:
+    for face_landmarks in results.multi_face_landmarks:
+        visible_landmarks_count = 0
+        total_landmarks = 468  # MediaPipe FaceMesh의 전체 랜드마크 수
+
+        for landmark in face_landmarks.landmark:
+            x, y = round(landmark.x * width), round(landmark.y * height)  # 정수 변환 시 반올림
+
+            # 가려진 영역(검은색)인지 확인 → 0이면 가려진 부분이므로 제외
+            if 0 <= x < width and 0 <= y < height and mask[y, x] == 255:
+                visible_landmarks_count += 1  # 보이는 부분만 카운트
+
+        # 취약성 점수 계산 (가려지지 않은 랜드마크 기준)
+        vulnerability_score = (visible_landmarks_count / total_landmarks) * 100
+>>>>>>> 5339547d05b52d5a6440b6d1240d506b931681f7
 
         result = {
             'vulnerability_score': score,
@@ -92,8 +125,13 @@ def analyze_image_vulnerability(image_path):
         }
         return json.dumps(result)
 
+<<<<<<< HEAD
     except Exception as e:
         return json.dumps({'error': '분석 중 오류가 발생했습니다.', 'details': str(e)})
+=======
+        # 결과 JSON 출력
+        print(json.dumps(result))
+>>>>>>> 5339547d05b52d5a6440b6d1240d506b931681f7
 
 if __name__ == "__main__":
     image_path = sys.argv[1]
