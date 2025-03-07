@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    // 이미지 형식 검사
+    //이미지 형식 검사
     if (file.mimetype.startsWith('image/')) {
         cb(null, true);
     } else {
@@ -38,11 +38,11 @@ const upload = multer({
     storage,
     fileFilter,
     limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB 제한
+        fileSize: 10 * 1024 * 1024  //10MB 제한
     }
 });
 
-// 이미지 분석 API
+  //이미지 분석 API
 app.post('/analyze', upload.single('image'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: '파일이 없습니다.' });
@@ -50,8 +50,8 @@ app.post('/analyze', upload.single('image'), (req, res) => {
 
     const imagePath = path.join(uploadDir, req.file.filename);
     const pythonScriptPath = path.join(__dirname, 'analysis.py');
-    
-    // Python 실행 환경
+
+       //Python 실행 환경
     const pythonProcess = spawn('python', [pythonScriptPath, imagePath], {
         env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
     });
@@ -68,11 +68,11 @@ app.post('/analyze', upload.single('image'), (req, res) => {
         console.error('Python 오류:', data.toString());
     });
 
-    // 타임아웃 설정
+    //타임아웃 설정
     const timeout = setTimeout(() => {
         pythonProcess.kill();
         cleanupAndRespond('분석 시간이 초과되었습니다.');
-    }, 30000); // 30초 타임아웃
+    }, 30000); //30초 타임아웃
 
     function cleanupAndRespond(error) {
         clearTimeout(timeout);
@@ -133,7 +133,7 @@ app.use((err, req, res, next) => {
         if (err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({ error: '파일 크기는 10MB 이하여야 합니다.' });
         }
-        return res.status(400).json({ error: '파일 업로드 중 오류가 발생했습니다.' });
+        return res.status(400).json({ error: '파일 업로드 중 오류 발생했습니다.' });
     }
     res.status(500).json({ error: err.message });
 });

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepRisk - 소개</title>
+    <title>PreRisk - 소개</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/introduce.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 <body>
     <div class="nav-wrapper">
         <nav class="navbar">
-            <a href="index.html" class="nav-brand">DeepRisk</a>
+            <a href="index.html" class="nav-brand">PreRisk</a>
             <div class="nav-links">
                 <a href="index.html">홈</a>
                 <a href="analyze.html">분석</a>
@@ -21,26 +21,28 @@
     </div>
 
     <main class="main-content">
-        <div class="container">
-            <h1 class="title">DeepRisk 소개</h1>
-            <p class="description">최첨단 AI 기술로 이미지 보안을 혁신하는 DeepRisk를 소개합니다</p>
+        <div class="introduce-container">
+            <h1 class="title">PreRisk란?</h1>
+            <p class="description">PreRisk는 원본 이미지의 딥페이크 변형 취약성을 테스트할 수 있는 서비스입니다</p>
             
+            <h2 class="subtitle">이미지 취약성 분석 기준</h2>
+            <p>PreRisk는 이미지의 취약성을 분석하기 위해 다음 기준을 사용합니다.</p>
             <div class="features">
                 <div class="feature-card">
-                    <h3>딥페이크 취약성 테스트</h3>
-                    <p>사용자가 업로드한 이미지가 딥페이크로 변형될 때 얼마나 자연스러운지 분석합니다.</p>
+                    <h3>이미지 품질</h3>
+                    <p>해상도가 512x512 이상이고 흐릿하지 않아야 합니다.</p>
                 </div>
                 <div class="feature-card">
-                    <h3>AI 기반 분석</h3>
-                    <p>최신 AI 모델을 활용하여 이미지의 딥페이크 변형 가능성을 평가합니다.</p>
+                    <h3>얼굴 가시성</h3>
+                    <p>얼굴이 명확하게 인식되어야하고 전체 이미지에서 얼굴이 차지하는 비율이 10% 이상이어야 합니다</p>
                 </div>
                 <div class="feature-card">
-                    <h3>시각적 리포트</h3>
-                    <p>분석 결과를 직관적인 방식으로 제공하여 취약성을 쉽게 파악할 수 있습니다.</p>
+                    <h3>배경 복잡도</h3>
+                    <p>배경 복잡도가 낮아야 하고 복잡한 배경은 취약성을 높일 수 있습니다</p>
                 </div>
                 <div class="feature-card">
-                    <h3>보안 인사이트</h3>
-                    <p>딥페이크 공격에 대한 대비책과 개선 방향을 제시합니다.</p>
+                    <h3>취약성 점수</h3>
+                    <p>3가지 조건들을 기반으로 100점 만점에서 감점(-) 방식으로 취약성을 평가합니다</p>
                 </div>
             </div>
         </div>

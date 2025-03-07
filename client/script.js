@@ -51,12 +51,12 @@ document.addEventListener("DOMContentLoaded", () => {
     analyzeBtn.addEventListener("click", async () => {
         const file = fileInput.files[0];
         if (!file) {
-            alert("이미지를 선택하세요.");
+            alert("이미지를 선택하세요");
             return;
         }
 
         if (file.size > 10 * 1024 * 1024) {
-            alert("파일 크기는 10MB 이하여야 합니다.");
+            alert("파일 크기가 10MB 이하인 이미지로 업로드 가능");
             return;
         }
 
@@ -92,10 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <br>
                         <span class="risk-level">위험도: ${riskLevel}</span>
                     </p>
-                    <p class="details">
-                        - 감지된 피부 랜드마크: ${data.details.visible_landmarks_count}/${data.details.total_landmarks}<br>
-                        ${data.vulnerability_score > 70 ? '<strong class="warning">주의: 취약성이 높습니다.</strong>' : ''}
-                    </p>
+
                 `;
             }
         } catch (error) {
